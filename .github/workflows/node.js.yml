@@ -2,9 +2,9 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main" ]  # Trigger on push to main branch
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main" ]  # Trigger on pull requests targeting the main branch
 
 jobs:
   build:
@@ -12,27 +12,35 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x]
+        node-version: [18.x, 20.x]  # Matrix for different Node.js versions
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4  # Checkout the code
 
-    - name: Use Node.js ${{ matrix.node-version }}
+    - name: Set up Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+        node-version: ${{ matrix.node-version }}  # Set Node.js version
+        cache: 'npm'  # Cache npm dependencies
 
     - name: Install dependencies
-      run: npm ci
+      run: npm ci  # Install dependencies using CI
 
     - name: Generate Prisma Client
-      run: npx prisma generate
+      run: npx prisma generate  # Generate Prisma Client
+      env:
+        DATABASE_URL: ${{ secrets.DATABASE_URL }}  # Database URL from secrets
+
+    # Optional: Add a step to run tests (unit/integration tests)
+    - name: Run Tests
+      run: npm test  # You can adjust this to run your test suite
       env:
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        NEXT_PUBLIC_ALGOLIA_SEARCH_KEY: ${{ secrets.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY }}
 
-    - name: Build
-      run: npm run build
+    - name: Build the application
+      run: npm run build  # Build the app (e.g., for production)
       env:
         DATABASE_URL: ${{ secrets.DATABASE_URL }}
         NEXT_PUBLIC_ALGOLIA_SEARCH_KEY: ${{ secrets.NEXT_PUBLIC_ALGOLIA_SEARCH_KEY }}
@@ -41,3 +49,5 @@ jobs:
         NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${{ secrets.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
         CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    # Optional: Add a deployment step here if needed, for example for production or staging deployment.
